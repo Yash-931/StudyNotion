@@ -19,14 +19,9 @@ const PORT = process.env.PORT || 4000;
 // Loading environment variables from .env file
 dotenv.config();
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://study-notion-frontend-2rmxsuxwu.vercel.app"
-];
-
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || origin.endsWith(".vercel.app") || origin.includes("localhost")) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -34,6 +29,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+
 
 app.options("*", cors());
 
