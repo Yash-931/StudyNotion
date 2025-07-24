@@ -19,18 +19,30 @@ const PORT = process.env.PORT || 4000;
 // Loading environment variables from .env file
 dotenv.config();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://study-notion-frontend-2rmxsuxwu.vercel.app"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
+
+app.options("*", cors());
+
 // Connecting to database
 database.connect();
  
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-	cors({
-		origin: "*",
-		credentials: true,
-	})
-);
 app.use(
 	fileUpload({
 		useTempFiles: true,
@@ -60,5 +72,8 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
 	console.log(`App is listening at ${PORT}`);
 });
+
+
+
 
 // End of code.
