@@ -21,22 +21,30 @@ dotenv.config();
 
 // Connecting to database
 database.connect();
- 
+
 // Middlewares
 app.use(express.json());
-app.use(cors());
 app.use(cookieParser());
+
+// ✅ FIXED CORS SETUP
 const allowedOrigins = [
-  "http://localhost:3000",
-  "https://study-notion-frontend-teal.vercel.app"
+  "http://localhost:3000",       // local dev
+  /\.vercel\.app$/               // any Vercel deployment subdomain
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true); // allow tools like Postman
+
+      const allowed = allowedOrigins.some(o =>
+        typeof o === "string" ? o === origin : o.test(origin)
+      );
+
+      if (allowed) {
         callback(null, true);
       } else {
+        console.log("❌ Blocked by CORS:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -44,12 +52,15 @@ app.use(
   })
 );
 
+// ✅ Handle preflight OPTIONS requests for all routes
+app.options("*", cors());
 
+// File upload middleware
 app.use(
-	fileUpload({
-		useTempFiles: true,
-		tempFileDir: "/tmp/",
-	})
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
 );
 
 // Connecting to cloudinary
@@ -64,15 +75,13 @@ app.use("/api/v1/reach", contactUsRoute);
 
 // Testing the server
 app.get("/", (req, res) => {
-	return res.json({
-		success: true,
-		message: "Your server is up and running ...",
-	});
+  return res.json({
+    success: true,
+    message: "Your server is up and running ...",
+  });
 });
 
 // Listening to the server
 app.listen(PORT, () => {
-	console.log(`App is listening at ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
-// End of code.
